@@ -19,6 +19,8 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include <TimeLib.h>
+#include <DS1307RTC.h>
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pCharacteristictx = NULL;
@@ -96,7 +98,7 @@ void setup()
     pAdvertising->setScanResponse(false);
     pAdvertising->setMinPreferred(0x0); // set value to 0x00 to not advertise this parameter
     BLEDevice::startAdvertising();
-    pCharacteristicrx->setValue("mambana");
+    pCharacteristicrx->setValue("0");
     Serial.println("Waiting a client connection to notify...");
 }
 
@@ -104,28 +106,47 @@ void loop()
 {
     // Reading potentiometer value
     potValue = analogRead(potPin) * (1.1 / 4095) * 1000; //convert to mvolts
-    // Serial.println(potValue);
-    delay(1000);
-    //notify changed value
+    // Notify changed value
     if (deviceConnected)
     {
-        // Serial.println("connected");
-        std::string rxValue = pCharacteristicrx->getValue();
-        char txString[8];                  // transmitted data
-        dtostrf(potValue, 1, 3, txString); // float_val, min_width, digits_after_decimal, char_bufferr
-        pCharacteristictx->setValue(txString);
-        pCharacteristictx->notify();
-
-        if (rxValue.length() > 0)
+        Serial.println("connected");
+        // If time is not set by the client
+        if (timeStatus() != timeSet)
         {
+            String rxValue = pCharacteristicrx->getValue().c_str();
+            time_t t = rxValue.toInt();
             Serial.println();
             Serial.print("Received Value: ");
+            Serial.println(rxValue.toInt());
 
-            for (int i = 0; i < rxValue.length(); i++)
+            if (t != 0)
             {
-                Serial.print(rxValue[i]);
+                RTC.set(t); // set the RTC and the system time to the received value
+                setTime(t);
             }
         }
+        // Else, time is set by client
+        else
+        {
+            char potValue_s[12];                 // transmitted data buffer
+            dtostrf(potValue, 6, 3, potValue_s); // float_val, min_width, digits_after_decimal, char_buffer
+
+            time_t timeNow = now();
+            char timeNow_s[12];
+            sprintf(timeNow_s, "%ld", timeNow);
+
+            // format data as csv to be sent
+            char txValue[25];
+            strcpy(txValue, timeNow_s);
+            strcat(txValue, ",");
+            strcat(txValue, potValue_s);
+            
+            pCharacteristictx->setValue(txValue);
+            pCharacteristictx->notify();
+            Serial.print("transmit value: ");
+            Serial.println(txValue);
+        }
+
         delay(1000); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
     }
     // disconnecting
