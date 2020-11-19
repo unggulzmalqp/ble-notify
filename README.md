@@ -1,9 +1,11 @@
 # Send and Recieve data using BLE on ESP32
 This project intents retrieve from sensors and send it via BLE.
 ## Todo
-- [x] Send Data
-- [x] Receive Data
-- [ ] Timestamp data going to be sent
+- [x] Send data
+- [x] Receive data
+- [x] Timestamp data going to be sent
+- [ ] Store data when no client is connected
+- [ ] Send stored data upon client connect
 
 ## How to build PlatformIO based project
 1. [Install PlatformIO Core](http://docs.platformio.org/page/core.html)
