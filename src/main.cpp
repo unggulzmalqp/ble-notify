@@ -98,13 +98,14 @@ void setup()
     pAdvertising->setScanResponse(false);
     pAdvertising->setMinPreferred(0x0); // set value to 0x00 to not advertise this parameter
     BLEDevice::startAdvertising();
-    pCharacteristicrx->setValue("0");
+    int timeFallback = 0;
+    pCharacteristicrx->setValue(timeFallback);
     Serial.println("Waiting a client connection to notify...");
 }
 
 void loop()
 {
-    // Reading potentiometer value
+    // Reading sensor value
     potValue = analogRead(potPin) * (1.1 / 4095) * 1000; //convert to mvolts
     // Notify changed value
     if (deviceConnected)
@@ -113,12 +114,13 @@ void loop()
         // If time is not set by the client
         if (timeStatus() != timeSet)
         {
-            String rxValue = pCharacteristicrx->getValue().c_str();
-            time_t t = rxValue.toInt();
-            Serial.println();
+            uint8_t *rxValue = pCharacteristicrx->getData();
+            signed long timeValue = (rxValue[3] << 24) | (rxValue[2] << 16) | (rxValue[1] << 8) | rxValue[0];
             Serial.print("Received Value: ");
-            Serial.println(rxValue.toInt());
+            Serial.println(timeValue);
+            time_t t = timeValue;
 
+            // set time if the client send time data
             if (t != 0)
             {
                 RTC.set(t); // set the RTC and the system time to the received value
@@ -128,22 +130,22 @@ void loop()
         // Else, time is set by client
         else
         {
-            char potValue_s[12];                 // transmitted data buffer
+            char potValue_s[12];                 // sensor reading data buffer
             dtostrf(potValue, 6, 3, potValue_s); // float_val, min_width, digits_after_decimal, char_buffer
 
             time_t timeNow = now();
             char timeNow_s[12];
             sprintf(timeNow_s, "%ld", timeNow);
 
+            char txValue[25]; // transmited data buffer
             // format data as csv to be sent
-            char txValue[25];
             strcpy(txValue, timeNow_s);
             strcat(txValue, ",");
             strcat(txValue, potValue_s);
-            
+
             pCharacteristictx->setValue(txValue);
             pCharacteristictx->notify();
-            Serial.print("transmit value: ");
+            Serial.print("transmited value: ");
             Serial.println(txValue);
         }
 
