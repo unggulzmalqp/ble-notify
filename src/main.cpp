@@ -72,16 +72,13 @@ void setup()
 
     // Create a BLE Characteristic
     pCharacteristictx = pService->createCharacteristic(
-        TX_CHARACTERISTIC_UUID,
-        BLECharacteristic::PROPERTY_READ |
-            BLECharacteristic::PROPERTY_WRITE |
+        TX_CHARACTERISTIC_UUID,      
             BLECharacteristic::PROPERTY_NOTIFY |
             BLECharacteristic::PROPERTY_INDICATE);
     pCharacteristicrx = pService->createCharacteristic(
         RX_CHARACTERISTIC_UUID,
         BLECharacteristic::PROPERTY_READ |
-            BLECharacteristic::PROPERTY_WRITE |
-            BLECharacteristic::PROPERTY_NOTIFY |
+            BLECharacteristic::PROPERTY_WRITE |   
             BLECharacteristic::PROPERTY_INDICATE);
 
     // https://www.bluetooth.com/specifications/gatt/viewer?attributeXmlFile=org.bluetooth.descriptor.gatt.client_characteristic_configuration.xml
