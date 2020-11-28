@@ -1,5 +1,7 @@
 # Send and Recieve data using BLE on ESP32
 This project intents retrieve from sensors and send it via BLE.
+## Example Wiring
+![Wiring Diagram](/images/wiring.png?raw=true "Wiring Diagram")
 ## Todo
 - [x] Send data
 - [x] Receive data
