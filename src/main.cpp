@@ -55,6 +55,30 @@ class MyServerCallbacks : public BLEServerCallbacks
     }
 };
 
+char *formatAsCsv(char *text1, char *text2)
+{
+    char *csvValue = (char *)malloc(sizeof(char) * 25); //csv data buffer
+    strcpy(csvValue, text1);
+    strcat(csvValue, ",");
+    strcat(csvValue, text2);
+    return csvValue;
+}
+
+char *convertFloatToString(float float1)
+{
+    char *stringValue = (char *)malloc(sizeof(char) * 12);
+    dtostrf(float1, 6, 3, stringValue); // float_val, min_width, digits_after_decimal, char_buffer
+    return stringValue;
+}
+
+char *timeNowAsString()
+{
+    char *stringTime = (char *)malloc(sizeof(char) * 12);
+    time_t timeNow = now();
+    sprintf(stringTime, "%ld", timeNow);
+    return stringTime;
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -127,23 +151,20 @@ void loop()
         // Else, time is set by client
         else
         {
-            char potValue_s[12];                 // sensor reading data buffer
-            dtostrf(potValue, 6, 3, potValue_s); // float_val, min_width, digits_after_decimal, char_buffer
+            char *potValue_s = convertFloatToString(potValue);
 
-            time_t timeNow = now();
-            char timeNow_s[12];
-            sprintf(timeNow_s, "%ld", timeNow);
+            char *timeNow_s = timeNowAsString();
 
-            char txValue[25]; // transmited data buffer
-            // format data as csv to be sent
-            strcpy(txValue, timeNow_s);
-            strcat(txValue, ",");
-            strcat(txValue, potValue_s);
+            char *txValue = formatAsCsv(timeNow_s, potValue_s);
 
             pCharacteristictx->setValue(txValue);
             pCharacteristictx->notify();
             Serial.print("transmited value: ");
             Serial.println(txValue);
+
+            free(potValue_s);
+            free(timeNow_s);
+            free(txValue);
         }
 
         delay(1000); // bluetooth stack will go into congestion, if too many packets are sent, in 6 hours test i was able to go as low as 3ms
