@@ -119,6 +119,8 @@ void setup()
     pAdvertising->setScanResponse(false);
     pAdvertising->setMinPreferred(0x0); // set value to 0x00 to not advertise this parameter
     BLEDevice::startAdvertising();
+    
+    //give a default value to time characteristic
     int timeFallback = 0;
     pCharacteristicrx->setValue(timeFallback);
     Serial.println("Waiting a client connection to notify...");
