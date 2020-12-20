@@ -153,7 +153,7 @@ void loop()
     {
         delay(1000);                 // give the bluetooth stack the chance to get things ready
         pServer->startAdvertising(); // restart advertising
-        Serial.println("start advertising");
+        Serial.println("disconnecting, start advertising");
         oldDeviceConnected = deviceConnected;
     }
     // connecting
@@ -161,7 +161,18 @@ void loop()
     {
         // do stuff here on connecting
         Serial.println("connecting");
-        delay(1000);
         oldDeviceConnected = deviceConnected;
+        delay(1000);
+    }
+    if (!deviceConnected)
+    {
+        Serial.println("disconnected");
+
+        // If time is set by the client
+        if (timeStatus() == timeSet)
+        {
+            Serial.println("storing data");
+        }
+        delay(1000);
     }
 }
