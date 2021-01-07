@@ -88,7 +88,6 @@ int readAndAverages(int pin1)
     for(i = 0; i < totalData; ++i)
     {
         reading = analogRead(pin1);
-        Serial.println(reading);
         average = average + reading;
         delay(100);
     }
