@@ -40,7 +40,7 @@ bool dataRecieved = false;
 const int potPin = 34;
 
 // variable for storing the potentiometer value
-float potValue = 0;
+int potValue = 0;
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -64,19 +64,36 @@ char *formatAsCsv(char *text1, char *text2)
     return csvValue;
 }
 
-char *convertFloatToString(float float1)
-{
-    char *stringValue = (char *)malloc(sizeof(char) * 12);
-    dtostrf(float1, 6, 3, stringValue); // float_val, min_width, digits_after_decimal, char_buffer
-    return stringValue;
-}
-
 char *timeNowAsString()
 {
     char *stringTime = (char *)malloc(sizeof(char) * 12);
     time_t timeNow = now();
     sprintf(stringTime, "%ld", timeNow);
     return stringTime;
+}
+
+char *convertIntToString(int int1)
+{
+    char *stringValue = (char *)malloc(sizeof(char) * 12);
+    itoa(int1, stringValue, 10);
+    return stringValue;
+}
+
+int readAndAverages(int pin1)
+{
+    int reading;
+    int average = 0;
+    int i;
+    int totalData = 10;
+    for(i = 0; i < totalData; ++i)
+    {
+        reading = analogRead(pin1);
+        Serial.println(reading);
+        average = average + reading;
+        delay(100);
+    }
+    average = average / totalData;
+    return average;
 }
 
 void setup()
@@ -129,7 +146,7 @@ void setup()
 void loop()
 {
     // Reading sensor value
-    potValue = analogRead(potPin) * (1.1 / 4095) * 1000; //convert to mvolts
+    potValue = readAndAverages(potPin);
     // Notify changed value
     if (deviceConnected)
     {
@@ -153,7 +170,7 @@ void loop()
         // Else, time is set by client
         else
         {
-            char *potValue_s = convertFloatToString(potValue);
+            char *potValue_s = convertIntToString(potValue);
 
             char *timeNow_s = timeNowAsString();
 
