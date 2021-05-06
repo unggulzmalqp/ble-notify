@@ -21,6 +21,7 @@
 #include <BLE2902.h>
 #include <TimeLib.h>
 #include <DS1307RTC.h>
+#include <ACS712.h>
 
 BLEServer *pServer = NULL;
 BLECharacteristic *pCharacteristictx = NULL;
@@ -28,6 +29,8 @@ BLECharacteristic *pCharacteristicrx = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 bool dataRecieved = false;
+// ACS712 is connected to pin 34
+ACS712 sensor(ACS712_30A, 34);
 
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
@@ -37,10 +40,13 @@ bool dataRecieved = false;
 #define RX_CHARACTERISTIC_UUID "7e8adb7e-b68b-48ce-aaad-d97a3399ef5a"
 
 // Potentiometer is connected to GPIO 34
-const int potPin = 34;
+// const int potPin = 34;
 
 // variable for storing the potentiometer value
-int potValue = 0;
+float potValue = 0;
+
+// Typical voltage
+float U = 230;
 
 class MyServerCallbacks : public BLEServerCallbacks
 {
@@ -100,6 +106,9 @@ void setup()
     Serial.begin(115200);
     analogSetAttenuation(ADC_0db); //set fullscale to 1.1V
 
+    // Calibrate sensor
+    sensor.calibrate();
+    
     // Create the BLE Device
     BLEDevice::init("ESP32");
 
@@ -145,7 +154,8 @@ void setup()
 void loop()
 {
     // Reading sensor value
-    potValue = readAndAverages(potPin);
+    potValue = sensor.getCurrentAC();
+    //potValue = readAndAverages(potPin);
     // Notify changed value
     if (deviceConnected)
     {
