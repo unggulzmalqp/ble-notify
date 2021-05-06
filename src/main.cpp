@@ -30,7 +30,7 @@ bool deviceConnected = false;
 bool oldDeviceConnected = false;
 bool dataRecieved = false;
 // ACS712 is connected to pin 34
-ACS712 sensor(ACS712_30A, 34);
+ACS712 sensor(ACS712_05B, 34);
 
 // See the following for generating UUIDs:
 // https://www.uuidgenerator.net/
@@ -99,6 +99,13 @@ int readAndAverages(int pin1)
     }
     average = average / totalData;
     return average;
+}
+
+char *convertFloatToString(float float1)
+{
+    char *stringValue = (char *)malloc(sizeof(char) * 12);
+    dtostrf(float1, 6, 3, stringValue);
+    return stringValue;
 }
 
 void setup()
@@ -179,7 +186,8 @@ void loop()
         // Else, time is set by client
         else
         {
-            char *potValue_s = convertIntToString(potValue);
+            // char *potValue_s = convertIntToString(potValue);
+            char *potValue_s = convertFloatToString(potValue);
 
             char *timeNow_s = timeNowAsString();
 
